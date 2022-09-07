@@ -21,10 +21,19 @@ EditorBuildSettings:
     path: Assets/Scenes/Levels/DefaultCastle.unity
     guid: 2c88ad1eb18532241acee4483fed211d
   - enabled: 1
+    path: Assets/Scenes/Levels/ModCastle.unity
+    guid: 07d9cfe1ce4455a4bb1d21ac95a00bab
+  - enabled: 1
     path: Assets/Scenes/Levels/DefaultPipes.unity
     guid: 3f5866ca86038b44384372ab3dadfffc
   - enabled: 1
+    path: Assets/Scenes/Levels/ModPipes.unity
+    guid: 3932b12f06c99044c886b18c0352c9b5
+  - enabled: 1
     path: Assets/Scenes/Levels/DefaultSnow.unity
+    guid: 931f6d453f1ff1a48b09b65bd17afd94
+  - enabled: 1
+    path: Assets/Scenes/Levels/ModSnow.unity
     guid: 42e7b04a277dea44eab7edc32729f7a5
   - enabled: 1
     path: Assets/Scenes/Levels/CustomJungle.unity
@@ -33,8 +42,14 @@ EditorBuildSettings:
     path: Assets/Scenes/Levels/CustomSky.unity
     guid: addb28d9cb6d8a6498a3b328a6e57f33
   - enabled: 1
+    path: Assets/Scenes/Levels/ModSky.unity
+    guid: 68df6700a44064841aed71da1492a565
+  - enabled: 1
     path: Assets/Scenes/Levels/CustomVolcano.unity
     guid: 48dfbffbd41b62a41a8135ce450497f5
+  - enabled: 1
+    path: Assets/Scenes/Levels/ClassicVolcano.unity
+    guid: 68ae0277ce83e6f469d6d6138ff327fc
   - enabled: 1
     path: Assets/Scenes/Levels/CustomBonus.unity
     guid: ce4cf98f31007b44ea19a2fb2ab0924a

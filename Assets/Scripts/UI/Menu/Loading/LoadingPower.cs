@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using Photon.Pun;
+
 public class LoadingPower : MonoBehaviour {
     
     public int marioX = -296, peachX = 296, minX = -410;
@@ -11,9 +13,36 @@ public class LoadingPower : MonoBehaviour {
     private RectTransform rect;
     private bool goomba, goombaHit;
     private float goombaTimer;
+    public static bool GetCustomProperty<Sp>(string key, out Sp value, ExitGames.Client.Photon.Hashtable properties = null)
+    {
+        if (properties == null)
+            properties = PhotonNetwork.CurrentRoom.CustomProperties;
+        if (properties == null)
+        {
+            value = default;
+            return false;
+        }
+
+        properties.TryGetValue(key, out object temp);
+        if (temp != null)
+        {
+            value = (Sp)temp;
+            return true;
+        }
+        else
+        {
+            value = default;
+            return false;
+        }
+    }
+
     void Start() {
         animator = GetComponent<Animator>();
         rect = GetComponent<RectTransform>();
+        GetCustomProperty(Enums.NetRoomProperties.SpawnWithMush, out bool mush);
+        if (mush)
+            mario.scale = 1;
+        else mario.scale = 0;
     }
 
     void Update() {

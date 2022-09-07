@@ -26,6 +26,7 @@ public class PlayerController : MonoBehaviourPun, IFreezableEntity, ICustomSeria
     public int playerId = -1;
     public bool dead = false, spawned = false;
     public Enums.PowerupState state = Enums.PowerupState.Small, previousState;
+
     public float slowriseGravity = 0.85f, normalGravity = 2.5f, flyingGravity = 0.8f, flyingTerminalVelocity = 1.25f, drillVelocity = 7f, groundpoundTime = 0.25f, groundpoundVelocity = 10, blinkingSpeed = 0.25f, terminalVelocity = -7f, jumpVelocity = 6.25f, megaJumpVelocity = 16f, launchVelocity = 12f, wallslideSpeed = -4.25f, giantStartTime = 1.5f, soundRange = 10f, slopeSlidingAngle = 12.5f, pickupTime = 0.5f;
     public float propellerLaunchVelocity = 6, propellerFallSpeed = 2, propellerSpinFallSpeed = 1.5f, propellerSpinTime = 0.75f, propellerDrillBuffer, heightSmallModel = 0.42f, heightLargeModel = 0.82f;
 
@@ -550,6 +551,7 @@ public class PlayerController : MonoBehaviourPun, IFreezableEntity, ICustomSeria
                     if (state == Enums.PowerupState.MiniMushroom && other.state != Enums.PowerupState.MiniMushroom) {
                         //we are mini, they arent. special rules.
                         if (groundpounded) {
+                            otherView.RPC(nameof(Powerdown), RpcTarget.All, false);
                             otherView.RPC(nameof(Knockback), RpcTarget.All, otherObj.transform.position.x < body.position.x, 1, false, photonView.ViewID);
                             groundpound = false;
                             bounce = true;
@@ -561,7 +563,7 @@ public class PlayerController : MonoBehaviourPun, IFreezableEntity, ICustomSeria
                         otherView.RPC(nameof(Knockback), RpcTarget.All, otherObj.transform.position.x > body.position.x, 3, false, photonView.ViewID);
                         bounce = false;
                     } else {
-                        if (other.state == Enums.PowerupState.MiniMushroom && groundpounded) {
+                        if (groundpounded) {
                             otherView.RPC(nameof(Powerdown), RpcTarget.All, false);
                         } else {
                             otherView.RPC(nameof(Knockback), RpcTarget.All, otherObj.transform.position.x < body.position.x, groundpounded ? 3 : 1, false, photonView.ViewID);
@@ -648,6 +650,7 @@ public class PlayerController : MonoBehaviourPun, IFreezableEntity, ICustomSeria
             }
 
             if (!fireball.isIceball) {
+                photonView.RPC(nameof(Powerdown), RpcTarget.All, false);
                 photonView.RPC(nameof(Knockback), RpcTarget.All, fireball.left, 1, true, fireball.photonView.ViewID);
             } else {
                 if (!Frozen && !frozenObject && !pipeEntering) {
@@ -1078,7 +1081,10 @@ public class PlayerController : MonoBehaviourPun, IFreezableEntity, ICustomSeria
         }
 
         if (doKnockback)
+        { 
             Knockback(facingRight, 1, true, -1);
+            Powerdown(true);
+        }
         else
             hitInvincibilityCounter = 1.5f;
     }
@@ -1128,7 +1134,7 @@ public class PlayerController : MonoBehaviourPun, IFreezableEntity, ICustomSeria
         GameManager.Instance.CheckForWinner();
 
         //fx
-        PlaySoundEverywhere(photonView.IsMine ? Enums.Sounds.World_Star_Collect_Self : Enums.Sounds.World_Star_Collect_Enemy);
+        PlaySoundEverywhere(Enums.Sounds.World_Star_Collect_Enemy);
         Instantiate(Resources.Load("Prefabs/Particle/StarCollect"), particle, Quaternion.identity);
 
         //destroy
@@ -1303,6 +1309,29 @@ public class PlayerController : MonoBehaviourPun, IFreezableEntity, ICustomSeria
             ScoreboardUpdater.instance.OnDeathToggle();
     }
 
+    public static bool GetCustomProperty<Sp>(string key, out Sp value, ExitGames.Client.Photon.Hashtable properties = null)
+    {
+        if (properties == null)
+            properties = PhotonNetwork.CurrentRoom.CustomProperties;
+        if (properties == null)
+        {
+            value = default;
+            return false;
+        }
+
+        properties.TryGetValue(key, out object temp);
+        if (temp != null)
+        {
+            value = (Sp)temp;
+            return true;
+        }
+        else
+        {
+            value = default;
+            return false;
+        }
+    }
+
     [PunRPC]
     public void PreRespawn() {
 
@@ -1321,6 +1350,7 @@ public class PlayerController : MonoBehaviourPun, IFreezableEntity, ICustomSeria
         transform.position = body.position = GameManager.Instance.GetSpawnpoint(playerId);
         dead = false;
         cameraController.Recenter();
+
         previousState = state = Enums.PowerupState.Small;
         AnimationController.DisableAllModels();
         spawned = false;
@@ -1345,7 +1375,10 @@ public class PlayerController : MonoBehaviourPun, IFreezableEntity, ICustomSeria
         gameObject.SetActive(true);
         dead = false;
         spawned = true;
-        state = Enums.PowerupState.Small;
+        GetCustomProperty(Enums.NetRoomProperties.SpawnWithMush, out bool mushy);
+        if (mushy)
+            state = Enums.PowerupState.Mushroom;
+        else state = Enums.PowerupState.Small;
         previousState = Enums.PowerupState.Small;
         body.velocity = Vector2.zero;
         wallSlideLeft = false;

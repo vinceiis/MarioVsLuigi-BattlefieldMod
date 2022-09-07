@@ -20,7 +20,7 @@ public class MainMenuManager : MonoBehaviour, ILobbyCallbacks, IInRoomCallbacks,
     public const int NICKNAME_MIN = 2, NICKNAME_MAX = 20;
 
     public static MainMenuManager Instance;
-    public AudioSource sfx, music;
+    public AudioSource sfx, music; 
     public GameObject lobbiesContent, lobbyPrefab;
     bool quit, validName;
     public GameObject connecting;
@@ -30,7 +30,7 @@ public class MainMenuManager : MonoBehaviour, ILobbyCallbacks, IInRoomCallbacks,
     public TMP_Dropdown levelDropdown, characterDropdown;
     public RoomIcon selectedRoomIcon, privateJoinRoom;
     public Button joinRoomBtn, createRoomBtn, startGameBtn;
-    public Toggle ndsResolutionToggle, fullscreenToggle, livesEnabled, powerupsEnabled, timeEnabled, drawTimeupToggle, fireballToggle, vsyncToggle, privateToggle, privateToggleRoom, aspectToggle, spectateToggle, scoreboardToggle, filterToggle;
+    public Toggle ndsResolutionToggle, fullscreenToggle, livesEnabled, powerupsEnabled, spawnWithMush, timeEnabled, drawTimeupToggle, fireballToggle, vsyncToggle, privateToggle, privateToggleRoom, aspectToggle, spectateToggle, scoreboardToggle, filterToggle;
     public GameObject playersContent, playersPrefab, chatContent, chatPrefab;
     public TMP_InputField nicknameField, starsText, coinsText, livesField, timeField, lobbyJoinField, chatTextField;
     public Slider musicSlider, sfxSlider, masterSlider, lobbyPlayersSlider, changePlayersSlider;
@@ -101,7 +101,7 @@ public class MainMenuManager : MonoBehaviour, ILobbyCallbacks, IInRoomCallbacks,
             valid &= !room.RemovedFromList;
             valid &= room.MaxPlayers >= 2 && room.MaxPlayers <= 10;
             valid &= lives <= 99;
-            valid &= stars >= 1 && stars <= 99;
+            valid &= stars >= 0 && stars <= 99;
             valid &= coins >= 1 && coins <= 99;
             //valid &= host.IsValidUsername();
 
@@ -213,6 +213,7 @@ public class MainMenuManager : MonoBehaviour, ILobbyCallbacks, IInRoomCallbacks,
         AttemptToUpdateProperty<int>(updatedProperties, Enums.NetRoomProperties.CoinRequirement, ChangeCoinRequirement);
         AttemptToUpdateProperty<int>(updatedProperties, Enums.NetRoomProperties.Lives, ChangeLives);
         AttemptToUpdateProperty<bool>(updatedProperties, Enums.NetRoomProperties.NewPowerups, ChangeNewPowerups);
+        AttemptToUpdateProperty<bool>(updatedProperties, Enums.NetRoomProperties.SpawnWithMush, ChangeSpawnWithMush);
         AttemptToUpdateProperty<int>(updatedProperties, Enums.NetRoomProperties.Time, ChangeTime);
         AttemptToUpdateProperty<bool>(updatedProperties, Enums.NetRoomProperties.DrawTime, ChangeDrawTime);
         AttemptToUpdateProperty<string>(updatedProperties, Enums.NetRoomProperties.HostName, ChangeLobbyHeader);
@@ -794,6 +795,10 @@ public class MainMenuManager : MonoBehaviour, ILobbyCallbacks, IInRoomCallbacks,
         powerupsEnabled.SetIsOnWithoutNotify(value);
     }
 
+    public void ChangeSpawnWithMush (bool value) {
+        spawnWithMush.SetIsOnWithoutNotify(value);
+    }
+
     public void ChangeLives(int lives) {
         livesEnabled.SetIsOnWithoutNotify(lives != -1);
         UpdateSettingEnableStates();
@@ -1293,10 +1298,7 @@ public class MainMenuManager : MonoBehaviour, ILobbyCallbacks, IInRoomCallbacks,
             return;
 
         int.TryParse(input.text, out int newValue);
-        if (newValue < 1) {
-            newValue = 5;
-            input.text = newValue.ToString();
-        }
+
         if (newValue == (int) PhotonNetwork.CurrentRoom.CustomProperties[Enums.NetRoomProperties.StarRequirement])
             return;
 
@@ -1418,6 +1420,13 @@ public class MainMenuManager : MonoBehaviour, ILobbyCallbacks, IInRoomCallbacks,
         PhotonNetwork.LocalPlayer.SetCustomProperties(properties);
     }
 
+    public void SpawnWithMush(Toggle toggle)
+    {
+        Hashtable properties = new() {
+            [Enums.NetRoomProperties.SpawnWithMush] = toggle.isOn
+        };
+        PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
+    }
     public void EnableTime(Toggle toggle) {
         Hashtable properties = new() {
             [Enums.NetRoomProperties.Time] = toggle.isOn ? ParseTimeToSeconds(timeField.text) : -1

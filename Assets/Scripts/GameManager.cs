@@ -608,6 +608,7 @@ public class GameManager : MonoBehaviour, IOnEventCallback, IInRoomCallbacks, IC
     }
 
     private IEnumerator BigStarRespawn(bool wait = true) {
+ 
         if (wait)
             yield return new WaitForSeconds(10.4f - playerCount / 5f);
 
@@ -633,6 +634,7 @@ public class GameManager : MonoBehaviour, IOnEventCallback, IInRoomCallbacks, IC
 
             PhotonNetwork.InstantiateRoomObject("Prefabs/BigStar", spawnPos, Quaternion.identity);
             remainingSpawns.RemoveAt(index);
+
             break;
         }
     }
